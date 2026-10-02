@@ -6,6 +6,7 @@ from models import build_classifiers, extract_features
 from preprocessing import DATASET_PATH
 
 WINDOW = 2
+MIN_SENSE_COUNT = 5
 
 
 def evaluate(df, window):
@@ -33,6 +34,11 @@ def evaluate(df, window):
     return pd.DataFrame(rows)
 
 
+def drop_rare_senses(df, min_count):
+    counts = df.groupby(['word', 'sense']).sense.transform('size')
+    return df[counts >= min_count]
+
+
 if __name__ == '__main__':
-    df = pd.read_csv(DATASET_PATH)
+    df = drop_rare_senses(pd.read_csv(DATASET_PATH), MIN_SENSE_COUNT)
     print(evaluate(df, WINDOW).round(3).to_string(index=False))
