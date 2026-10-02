@@ -22,6 +22,6 @@ def extract_features(tokens, tags, position, window):
 
 def build_classifiers():
     return {
-        'SVM': make_pipeline(DictVectorizer(), SVC(kernel='linear')),
-        'Naive Bayes': make_pipeline(DictVectorizer(), MultinomialNB()),
+        'SVM': make_pipeline(DictVectorizer(sparse=False), SVC(kernel='linear')),
+        'Naive Bayes': make_pipeline(DictVectorizer(sparse=False), MultinomialNB()),
     }
