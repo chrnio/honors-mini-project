@@ -3,15 +3,16 @@ from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from sklearn.model_selection import StratifiedKFold, cross_val_predict
 
 from models import build_classifiers, extract_features
-from preprocessing import DATASET_PATH
+from preprocessing import DATASET_PATH, ROOT
 
+RESULTS_DIR = ROOT / 'results'
 WINDOWS = [2, 5]
 MIN_SENSE_COUNT = 5
 
 
 def evaluate(df, window):
     folds = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
-    rows = []
+    metrics, predictions = [], []
     for word, group in df.groupby('word'):
         X = [
             extract_features(tokens.split(), pos.split(), position, window)
@@ -23,16 +24,19 @@ def evaluate(df, window):
             precision, recall, f1, _ = precision_recall_fscore_support(
                 y, pred, average='macro', zero_division=0
             )
-            rows.append({
+            metrics.append({
                 'window': window,
                 'word': word,
                 'model': name,
+                'senses': y.nunique(),
+                'instances': len(y),
                 'accuracy': accuracy_score(y, pred),
                 'precision': precision,
                 'recall': recall,
                 'f1': f1,
             })
-    return pd.DataFrame(rows)
+            predictions.append(group.assign(window=window, model=name, predicted=pred))
+    return pd.DataFrame(metrics), pd.concat(predictions)
 
 
 def drop_rare_senses(df, min_count):
@@ -42,6 +46,12 @@ def drop_rare_senses(df, min_count):
 
 if __name__ == '__main__':
     df = drop_rare_senses(pd.read_csv(DATASET_PATH), MIN_SENSE_COUNT)
-    results = pd.concat([evaluate(df, window) for window in WINDOWS])
-    table = results.pivot_table(index=['word', 'model'], columns='window', values=['accuracy', 'f1'])
+    metrics, predictions = zip(*(evaluate(df, window) for window in WINDOWS))
+    metrics, predictions = pd.concat(metrics), pd.concat(predictions)
+
+    RESULTS_DIR.mkdir(exist_ok=True)
+    metrics.to_csv(RESULTS_DIR / 'metrics.csv', index=False)
+    predictions.to_csv(RESULTS_DIR / 'predictions.csv', index=False)
+
+    table = metrics.pivot_table(index=['word', 'model'], columns='window', values=['accuracy', 'f1'])
     print(table.round(3).to_string())
