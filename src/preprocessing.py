@@ -10,7 +10,7 @@ from nltk.tree import Tree
 ROOT = Path(__file__).resolve().parents[1]
 DATASET_PATH = ROOT / 'data' / 'annotated' / 'semcor_wsd.csv'
 
-TARGETS = {'bank', 'interest', 'plant', 'run'}
+TARGETS = {'bank', 'interest', 'plant', 'run', 'state', 'case', 'rate', 'power'}
 
 STOPWORDS = set(stopwords.words('english'))
 lemmatizer = WordNetLemmatizer()
