@@ -5,7 +5,7 @@ from sklearn.model_selection import StratifiedKFold, cross_val_predict
 from models import build_classifiers, extract_features
 from preprocessing import DATASET_PATH
 
-WINDOW = 2
+WINDOWS = [2, 5]
 MIN_SENSE_COUNT = 5
 
 
@@ -24,6 +24,7 @@ def evaluate(df, window):
                 y, pred, average='macro', zero_division=0
             )
             rows.append({
+                'window': window,
                 'word': word,
                 'model': name,
                 'accuracy': accuracy_score(y, pred),
@@ -41,4 +42,6 @@ def drop_rare_senses(df, min_count):
 
 if __name__ == '__main__':
     df = drop_rare_senses(pd.read_csv(DATASET_PATH), MIN_SENSE_COUNT)
-    print(evaluate(df, WINDOW).round(3).to_string(index=False))
+    results = pd.concat([evaluate(df, window) for window in WINDOWS])
+    table = results.pivot_table(index=['word', 'model'], columns='window', values=['accuracy', 'f1'])
+    print(table.round(3).to_string())
