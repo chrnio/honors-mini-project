@@ -15,13 +15,18 @@
 \fancyfoot[R]{\thepage}
 
 \begin{document}
-\begin{center}
+\begin{titlepage}
+\centering
+\vspace*{\fill}
 {\LARGE\bfseries Supervised Machine Learning Approach for\\
 WSD in Spoken News\par}
-\vspace{0.8em}
-{\Large Architecture and Methodology\par}
-\vspace{0.8em}
+\vspace{3em}
 {\large Sree Saicharan Vadapalli\\ ET23BTIT133\par}
+\vspace*{\fill}
+\end{titlepage}
+
+\begin{center}
+{\LARGE\bfseries Architecture and Methodology\par}
 \end{center}
 \vspace{1em}
 
@@ -30,7 +35,7 @@ WSD in Spoken News\par}
 News transcripts are full of words like \emph{bank}, \emph{interest},
 \emph{plant} and \emph{run} whose meaning depends on the sentence around them.
 This project treats word sense disambiguation (WSD) as a supervised
-classification problem. For every target word we train a separate classifier
+classification problem. For every target word I train a separate classifier
 (a ``word expert'') that maps the context of an occurrence to a WordNet synset.
 Two classifiers are compared, a linear SVM and multinomial Naive Bayes, each
 with two context window sizes, $W = \pm 2$ and $W = \pm 5$.
@@ -52,23 +57,26 @@ stopwords \\
 
 \section{Dataset}
 
-The dataset is built from SemCor \cite{semcor}, read through NLTK. SemCor was
-picked over NLTK's Senseval corpus for two reasons: its labels are WordNet
-synsets, which is what we want to predict, and it covers the words named in
-the problem. NLTK's Senseval data only has \emph{hard}, \emph{interest},
-\emph{line} and \emph{serve}, labelled with its own sense inventory.
-
-Besides the four words from the problem statement we added \emph{state},
-\emph{case}, \emph{rate} and \emph{power}. They are common in news, have
-several senses, and have enough tagged examples in SemCor to train on.
-
-Extraction walks every sense-tagged sentence and keeps each chunk whose WordNet
-lemma is one of the targets. For each hit we store the target word, its synset,
-its token position and the full sentence, then POS-tag the sentence with NLTK's
-perceptron tagger. This gives 1,177 labelled occurrences, saved to
-\texttt{data/annotated/semcor\_wsd.csv}. Senses with fewer than 5 examples are
-dropped before training since they cannot appear in every fold of a 5-fold
-split, leaving 1,092 occurrences.
+\begin{itemize}
+\item \textbf{Source}: SemCor, read through NLTK. Its labels are WordNet
+synsets and it covers the words named in the problem. NLTK's Senseval data only
+has \emph{hard}, \emph{interest}, \emph{line} and \emph{serve}, labelled with
+its own sense inventory.
+\item \textbf{Target words}: \emph{bank}, \emph{interest}, \emph{plant} and
+\emph{run} from the problem statement, plus \emph{state}, \emph{case},
+\emph{rate} and \emph{power}, which are common in news, have several senses
+and have enough tagged examples to train on.
+\item \textbf{Extraction}: every sense-tagged chunk whose WordNet lemma is a
+target is kept along with its synset, token position and sentence. The sentence
+is then POS-tagged with NLTK's perceptron tagger. This gives 1,177 labelled
+occurrences, saved to \nolinkurl{data/annotated/semcor_wsd.csv}.
+\item \textbf{Filtering}: senses with fewer than 5 examples are dropped since
+they cannot appear in every fold of a 5-fold split, leaving 1,092 occurrences.
+\item \textbf{Caveat}: SemCor is written text from the Brown corpus, not
+speech. Raw transcripts have no punctuation, so the punctuation tags that show
+up in the POS window here would be missing, and the POS tagger itself was
+trained on punctuated text and will be less accurate on them.
+\end{itemize}
 
 \begin{center}
 \begin{tabular}{lrrr}
@@ -86,11 +94,6 @@ state & 278 & 6 & 0.39 \\
 \bottomrule
 \end{tabular}
 \end{center}
-
-One caveat: SemCor is written text from the Brown corpus, not speech. Raw
-transcripts have no punctuation, so the punctuation tags that show up in the POS
-window here would be missing, and the POS tagger itself was trained on
-punctuated text and will be less accurate on them.
 
 \section{Feature vectors}
 
@@ -149,8 +152,7 @@ learned from the training folds only.
 
 \section{Classifiers}
 
-Both classifiers are scikit-learn defaults \cite{sklearn}; we did no
-hyperparameter tuning.
+Both classifiers use scikit-learn defaults; I did no hyperparameter tuning.
 
 \paragraph{Multinomial Naive Bayes} picks the sense $s$ that maximizes
 \[
@@ -175,12 +177,12 @@ features.
 \section{Evaluation protocol}
 
 With 34 to 278 examples per word, a single train/test split would leave some
-test sets with fewer than 10 examples. Instead we use stratified 5-fold
+test sets with fewer than 10 examples. Instead I use stratified 5-fold
 cross-validation (shuffled, fixed seed) through \texttt{cross\_val\_predict}.
 Every occurrence is predicted exactly once, by a model that never saw it in
 training, and the metrics are computed on those predictions.
 
-We report accuracy and macro-averaged precision, recall and F1:
+I report accuracy and macro-averaged precision, recall and F1:
 \[
 \mathrm{P}_s = \frac{TP_s}{TP_s + FP_s}, \quad
 \mathrm{R}_s = \frac{TP_s}{TP_s + FN_s}, \quad
@@ -192,28 +194,5 @@ We report accuracy and macro-averaged precision, recall and F1:
 Sense distributions are skewed, so accuracy alone rewards a model that just
 predicts the most common sense. Macro F1 weighs every sense equally and shows
 whether rare senses are actually being learned.
-
-\section{Running it}
-
-{\small
-\begin{verbatim}
-pip install -r requirements.txt
-python -m nltk.downloader semcor wordnet stopwords averaged_perceptron_tagger_eng
-python src/preprocessing.py
-python src/pipeline.py
-\end{verbatim}
-}
-
-\noindent The first script writes the dataset CSV. The second prints a summary
-table and writes per-word metrics and per-occurrence predictions to
-\texttt{results/}. Results are discussed in the Evaluation Report.
-
-\begin{thebibliography}{9}
-\bibitem{semcor} G. A. Miller, C. Leacock, R. Tengi and R. T. Bunker. A
-semantic concordance. \emph{Proceedings of the ARPA Human Language Technology
-Workshop}, 1993.
-\bibitem{sklearn} F. Pedregosa et al. Scikit-learn: Machine learning in
-Python. \emph{Journal of Machine Learning Research}, 12:2825--2830, 2011.
-\end{thebibliography}
 
 \end{document}

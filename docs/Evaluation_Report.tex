@@ -16,13 +16,18 @@
 \fancyfoot[R]{\thepage}
 
 \begin{document}
-\begin{center}
+\begin{titlepage}
+\centering
+\vspace*{\fill}
 {\LARGE\bfseries Supervised Machine Learning Approach for\\
 WSD in Spoken News\par}
-\vspace{0.8em}
-{\Large Evaluation Report\par}
-\vspace{0.8em}
+\vspace{3em}
 {\large Sree Saicharan Vadapalli\\ ET23BTIT133\par}
+\vspace*{\fill}
+\end{titlepage}
+
+\begin{center}
+{\LARGE\bfseries Evaluation Report\par}
 \end{center}
 \vspace{1em}
 
@@ -86,39 +91,23 @@ with the rare ones.
 \label{fig:window}
 \end{figure}
 
-A wider window does not help in general. For the SVM, overall accuracy barely
-moves (0.65 to 0.64) and macro F1 drops from 0.54 to 0.50. Most of that drop
-comes from \emph{interest}, \emph{plant}, \emph{power} and \emph{rate}, where
-macro F1 falls by 0.08 to 0.09 each. Naive Bayes is mixed: it gains a little on
-\emph{bank}, \emph{case}, \emph{interest}, \emph{power} and \emph{run} and loses
-on \emph{plant} and \emph{rate}, ending about flat overall.
+A wider window does not help overall. SVM macro F1 drops from 0.54 to 0.50,
+mostly on \emph{interest}, \emph{plant}, \emph{power} and \emph{rate}, and Naive
+Bayes stays about flat. The useful cues for these words are local (``interest
+rate'', ``power plant''), and $\pm 5$ adds two to three times as many features,
+mostly rare words that act as noise at this data size.
 
-The reason is that the useful cues for most of these words are local. Phrases
-like ``interest rate'', ``rate of'' or ``power plant'' sit right next to the
-target and are already inside $\pm 2$. Going to $\pm 5$ gives two to three
-times as many features, most of them words that show up once or twice, and with
-100 to 300 examples per word that is mostly noise for the SVM to fit.
-
-\emph{bank} is the exception and the clearest win for $\pm 5$ (SVM accuracy
-0.68 to 0.79). Its two senses, the financial institution and the river bank,
-are about topic rather than local syntax. In ``the board of directors of the
-\textbf{bank} with the approval of the Farm Credit Administration'', the $\pm 2$
-window sees only ``of the'' and ``with the''; at $\pm 5$ it reaches
-``directors'' and ``approval'' and gets it right.
+\emph{bank} is the exception (SVM accuracy 0.68 to 0.79). Its senses depend on
+topic, so words like ``directors'' and ``approval'' a few positions away help
+where the $\pm 2$ window only sees ``of the'' and ``with the''.
 
 \section{SVM vs Naive Bayes}
 
-At $W = \pm 2$ the SVM has higher accuracy on every word except \emph{plant},
-where they tie. At $\pm 5$ Naive Bayes edges ahead on \emph{case} (0.56 vs 0.55)
-but is behind everywhere else. The bigger difference is in macro F1,
-0.54 vs 0.40 at $\pm 2$. On words with many senses, Naive Bayes falls back on
-the prior and predicts the majority sense most of the time: its macro F1 is
-0.23 on \emph{interest}, 0.20 on \emph{power} and 0.16 on \emph{run}. The
-features are heavily correlated (the same context shows up as POS tags and as
-words), and the independence assumption counts that evidence several times,
-which likely pushes Naive Bayes towards overconfident, majority-leaning
-predictions.
-The SVM learns weights jointly and handles the redundancy better.
+The SVM is ahead on accuracy almost everywhere (only \emph{case} at $\pm 5$
+goes to Naive Bayes, 0.56 vs 0.55), but the real gap is macro F1: 0.54 vs 0.40
+at $\pm 2$. On words with many senses Naive Bayes mostly predicts the majority
+sense (macro F1 of 0.16 on \emph{run}), likely because its independence
+assumption double counts the overlapping POS and word features.
 
 \section{Failure analysis}
 
@@ -143,28 +132,21 @@ plant.v.01 (to plant) & 5 & 0 & 3 \\
 \label{tab:plant}
 \end{table}
 
-\paragraph{Too little context in the window.} Many factory/organism confusions
-are occurrences like ``cut it off from the mother \textbf{plant}'' or ``into
-each hole with the \textbf{plant}'', where the $\pm 2$ window is mostly
-determiners and punctuation. With no content words to go on, the model falls
-back to the majority sense.
+\paragraph{Too little context.} Many factory/organism errors are occurrences
+like ``into each hole with the \textbf{plant}'', where the $\pm 2$ window has
+no content words and the model falls back to the majority sense.
 
-\paragraph{Rare senses get outvoted.} Five of the eight verb uses of
-\emph{plant} are tagged as the factory sense even though the POS feature marks
-them as verbs. With about six verb examples per training fold, the model does
-not put enough weight on the target POS to override everything else. The same
-thing happens with \emph{interest.v.01}, where 4 of its 5 occurrences get a
-noun sense.
+\paragraph{Rare senses get outvoted.} 5 of the 8 verb uses of \emph{plant} are
+predicted as a noun sense despite the verb POS tag. With about six verb examples
+per fold, the target POS does not carry enough weight. \emph{interest.v.01} has
+the same problem (4 of 5 wrong).
 
-\paragraph{Fine-grained WordNet senses.} Some errors are distinctions that are
-hard even for people. ``Insurance \textbf{rates}'' and ``hospital
-\textbf{rates}'' are gold \emph{rate.n.02} (an amount charged) and get
-predicted as \emph{rate.n.01} (a magnitude relative to something). For
-\emph{interest}, 28 of the 55 errors are other senses predicted as
-\emph{interest.n.01} (curiosity), for example \emph{interest.n.03} (the quality
-of being interesting) in ``features of \textbf{interest}''. This includes the
-financial sense \emph{interest.n.04}, which matters most for news and is right
-only 2 times out of 14.
+\paragraph{Fine-grained senses.} Some distinctions are hard even for people:
+``insurance \textbf{rates}'' is gold \emph{rate.n.02} (an amount charged) but
+predicted as \emph{rate.n.01} (a magnitude). The financial sense of
+\emph{interest} (\emph{interest.n.04}), the one that matters most for news, is
+right only 2 times out of 14 and is usually mistaken for \emph{interest.n.01}
+(curiosity).
 
 \section{Limitations}
 
