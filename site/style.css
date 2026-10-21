@@ -1,39 +1,93 @@
+/* Light style, values from the official Adw CSS variable reference */
 :root {
   --window-bg: #fafafb;
-  --view-bg: #ffffff;
   --card-bg: #ffffff;
-  --card-border: rgba(0, 0, 0, 0.08);
-  --headerbar-bg: rgba(255, 255, 255, 0.92);
-  --text: #1e1e1e;
-  --text-secondary: rgba(0, 0, 0, 0.55);
-  --accent: #3584e4;
+  --card-border: rgba(0, 0, 6, 0.15);
+  --headerbar-bg: #ffffff;
+  --text: rgba(0, 0, 6, 0.8);
+  --text-secondary: rgba(0, 0, 6, 0.55);
+  --accent-bg: #3584e4;
   --accent-ink: #ffffff;
-  --success-bg: rgba(46, 194, 126, 0.15);
-  --success-fg: #1b8457;
-  --error-bg: rgba(224, 27, 36, 0.12);
-  --error-fg: #c01c28;
-  --mark-bg: rgba(53, 132, 228, 0.18);
-  --shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.05), 0 0 1px 0 hsla(220, 9%, 46%, 0.5);
+  --accent-standalone: #0461be;
+  --success-bg: #2ec27e;
+  --success-ink: #ffffff;
+  --success-standalone: #007c3d;
+  --error-bg: #e01b24;
+  --error-ink: #ffffff;
+  --error-standalone: #c30000;
+  --mark-bg: rgba(53, 132, 228, 0.15);
+  --shadow: none;
 }
 
+/* Dark style, same reference, --window-bg overridden to the dark-4 palette swatch (#241f31) */
 @media (prefers-color-scheme: dark) {
   :root {
-    --window-bg: #242424;
-    --view-bg: #1e1e1e;
-    --card-bg: #303030;
-    --card-border: rgba(255, 255, 255, 0.09);
-    --headerbar-bg: rgba(48, 48, 48, 0.92);
+    --window-bg: #241f31;
+    --card-bg: #363141;
+    --card-border: rgba(255, 255, 255, 0.15);
+    --headerbar-bg: #363141;
     --text: #ffffff;
-    --text-secondary: rgba(255, 255, 255, 0.65);
-    --accent: #78aeed;
-    --accent-ink: #1e1e1e;
-    --success-bg: rgba(46, 194, 126, 0.18);
-    --success-fg: #8ff0c5;
-    --error-bg: rgba(224, 27, 36, 0.2);
-    --error-fg: #ff9a9d;
-    --mark-bg: rgba(120, 174, 237, 0.22);
-    --shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.35), 0 0 1px 0 hsla(220, 9%, 70%, 0.25);
+    --text-secondary: rgba(255, 255, 255, 0.55);
+    --accent-bg: #3584e4;
+    --accent-ink: #ffffff;
+    --accent-standalone: #81d0ff;
+    --success-bg: #26a269;
+    --success-ink: #ffffff;
+    --success-standalone: #78e9ab;
+    --error-bg: #c01c28;
+    --error-ink: #ffffff;
+    --error-standalone: #ff938c;
+    --mark-bg: rgba(53, 132, 228, 0.22);
+    --shadow: none;
   }
+}
+
+@font-face {
+  font-family: "Adwaita Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fonts/adwaita-sans-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Adwaita Sans";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("fonts/adwaita-sans-latin-600-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Adwaita Sans";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("fonts/adwaita-sans-latin-700-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Adwaita Sans";
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("fonts/adwaita-sans-latin-800-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Adwaita Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fonts/adwaita-mono-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Adwaita Mono";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("fonts/adwaita-mono-latin-700-normal.woff2") format("woff2");
+}
+
+:root {
+  --font-sans: "Adwaita Sans", Cantarell, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Adwaita Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
 }
 
 * { box-sizing: border-box; }
@@ -44,9 +98,7 @@ body {
   margin: 0;
   background: var(--window-bg);
   color: var(--text);
-  font-family: "Inter", Cantarell, "Adwaita Sans", system-ui, -apple-system,
-    "Segoe UI", sans-serif;
-  font-feature-settings: "cv11", "cv02", "cv03", "cv04";
+  font-family: var(--font-sans);
   font-size: 15px;
   line-height: 1.55;
 }
@@ -131,7 +183,7 @@ h1.group-title {
 .card {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: 1rem;
+  border-radius: 12px;
   box-shadow: var(--shadow);
   padding: 20px 22px;
 }
@@ -147,10 +199,11 @@ h1.group-title {
 .chip {
   display: inline-block;
   background: var(--mark-bg);
-  color: var(--accent);
+  color: var(--accent-standalone);
   border-radius: 999px;
   padding: 2px 10px;
-  font-size: 13px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
   font-weight: 600;
   margin: 0 3px 3px 0;
 }
@@ -176,8 +229,9 @@ h1.group-title {
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  background: var(--accent);
+  background: var(--accent-bg);
   color: var(--accent-ink);
+  font-family: var(--font-mono);
   font-size: 13px;
   font-weight: 700;
   display: flex;
@@ -200,7 +254,8 @@ h1.group-title {
 .results-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-family: var(--font-mono);
+  font-size: 13.5px;
 }
 
 .results-table th,
@@ -250,10 +305,10 @@ h1.group-title {
 .axis-label, .bar-label {
   fill: var(--text-secondary);
   font-size: 11px;
-  font-family: inherit;
+  font-family: var(--font-mono);
 }
 
-.bar-svm { fill: var(--accent); }
+.bar-svm { fill: var(--accent-bg); }
 .bar-nb { fill: var(--text-secondary); opacity: 0.6; }
 
 .example {
@@ -272,7 +327,7 @@ h1.group-title {
 
 mark {
   background: var(--mark-bg);
-  color: var(--accent);
+  color: var(--accent-standalone);
   border-radius: 4px;
   padding: 0 3px;
   font-weight: 700;
@@ -287,12 +342,12 @@ mark {
 
 .chip-ok {
   background: var(--success-bg);
-  color: var(--success-fg);
+  color: var(--success-ink);
 }
 
 .chip-bad {
   background: var(--error-bg);
-  color: var(--error-fg);
+  color: var(--error-ink);
 }
 
 .gloss {
@@ -302,6 +357,7 @@ mark {
 
 .gloss b {
   color: var(--text);
+  font-family: var(--font-mono);
   font-weight: 600;
 }
 
