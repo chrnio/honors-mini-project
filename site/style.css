@@ -13,7 +13,7 @@
   --error-bg: rgba(224, 27, 36, 0.12);
   --error-fg: #c01c28;
   --mark-bg: rgba(53, 132, 228, 0.18);
-  --shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.05), 0 0 1px 0 hsla(220, 9%, 46%, 0.5);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -32,7 +32,7 @@
     --error-bg: rgba(224, 27, 36, 0.2);
     --error-fg: #ff9a9d;
     --mark-bg: rgba(120, 174, 237, 0.22);
-    --shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.35), 0 0 1px 0 hsla(220, 9%, 70%, 0.25);
   }
 }
 
@@ -44,8 +44,9 @@ body {
   margin: 0;
   background: var(--window-bg);
   color: var(--text);
-  font-family: Cantarell, "Adwaita Sans", "Inter", system-ui, -apple-system,
+  font-family: "Inter", Cantarell, "Adwaita Sans", system-ui, -apple-system,
     "Segoe UI", sans-serif;
+  font-feature-settings: "cv11", "cv02", "cv03", "cv04";
   font-size: 15px;
   line-height: 1.55;
 }
@@ -130,7 +131,7 @@ h1.group-title {
 .card {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: 14px;
+  border-radius: 1rem;
   box-shadow: var(--shadow);
   padding: 20px 22px;
 }
