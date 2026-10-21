@@ -120,9 +120,18 @@ body {
 }
 
 .app-title {
+  display: block;
   font-weight: 700;
   font-size: 17px;
   letter-spacing: -0.01em;
+}
+
+.app-subtitle {
+  display: block;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  margin-top: 2px;
 }
 
 .view-switcher {
