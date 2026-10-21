@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Supervised WSD for Spoken News</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="headerbar">
+  <div class="headerbar-inner">
+    <span class="app-title">Supervised WSD for Spoken News</span>
+  </div>
+  <nav class="view-switcher" aria-label="Sections">
+    <a href="#problem">Problem</a>
+    <a href="#approach">Approach</a>
+    <a href="#demo">Demo &amp; Results</a>
+  </nav>
+</header>
+
+<main>
+
+  <section id="problem" class="page">
+    <h1 class="group-title">Problem Statement</h1>
+    <div class="card">
+      <p>
+        News broadcasts are full of words whose meaning shifts with context.
+        <span class="chip">bank</span> can be a riverbank or a financial
+        institution. <span class="chip">interest</span> can mean curiosity or
+        a loan charge. <span class="chip">plant</span> can be a factory or
+        something you grow in soil. A transcript‑processing system that
+        cannot tell these apart gets the underlying facts wrong, even when it
+        transcribed every word correctly.
+      </p>
+      <p>
+        This project asks a narrow, answerable version of that question: for
+        eight frequently ambiguous words
+        (<span class="chip">bank</span><span class="chip">interest</span><span class="chip">plant</span><span class="chip">run</span><span class="chip">state</span><span class="chip">case</span><span class="chip">rate</span><span class="chip">power</span>),
+        can a classifier learn which dictionary sense is meant in a sentence,
+        using nothing but the word's part of speech and the words sitting
+        near it?
+      </p>
+    </div>
+  </section>
+
+  <section id="approach" class="page">
+    <h1 class="group-title">Step by Step Explanation</h1>
+    <div class="card list-box">
+
+      <div class="row">
+        <div class="row-badge">1</div>
+        <div class="row-body">
+          <div class="row-title">Start from sentences with known answers</div>
+          <div class="row-subtitle">
+            SemCor is a corpus where every word is already tagged with its
+            correct dictionary sense (from WordNet). Every sentence
+            containing one of the eight target words becomes one labelled
+            example.
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="row-badge">2</div>
+        <div class="row-body">
+          <div class="row-title">Look only at the neighbours</div>
+          <div class="row-subtitle">
+            For each occurrence, take a window of nearby words — either 2 or
+            5 words on each side — and record their part‑of‑speech tags plus
+            a simple word count (bag‑of‑words). The target word itself is
+            never shown its own meaning, only its surroundings.
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="row-badge">3</div>
+        <div class="row-body">
+          <div class="row-title">Turn that into numbers</div>
+          <div class="row-subtitle">
+            Those tags and word counts become a feature vector — a row of
+            numbers a classifier can actually learn from, built fresh for
+            every single occurrence of every target word.
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="row-badge">4</div>
+        <div class="row-body">
+          <div class="row-title">Train two different classifiers per word</div>
+          <div class="row-subtitle">
+            A linear Support Vector Machine and a Naive Bayes model are each
+            trained separately for every target word, since "bank" and
+            "plant" have entirely different sets of possible senses.
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="row-badge">5</div>
+        <div class="row-body">
+          <div class="row-title">Test fairly, then compare</div>
+          <div class="row-subtitle">
+            5‑fold cross‑validation splits the examples into 5 groups,
+            training on 4 and testing on the 1 left out, rotating until every
+            example has been tested once — so no model is ever graded on
+            sentences it already memorised. Accuracy and macro F1 are then
+            compared across both classifiers and both window sizes.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section id="demo" class="page">
+    <h1 class="group-title">Demo and Results</h1>
+
+    <div class="card">
+      <table class="results-table">
+        <thead>
+          <tr><th>Model</th><th>Window</th><th>Accuracy</th><th>Macro F1</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>SVM</td><td>±2</td><td>0.65</td><td>0.54</td></tr>
+          <tr><td>SVM</td><td>±5</td><td>0.64</td><td>0.50</td></tr>
+          <tr><td>Naive Bayes</td><td>±2</td><td>0.61</td><td>0.40</td></tr>
+          <tr><td>Naive Bayes</td><td>±5</td><td>0.61</td><td>0.41</td></tr>
+        </tbody>
+      </table>
+      <p class="caption">
+        Averaged over all eight words, 5‑fold cross‑validation. The SVM wins
+        outright; the wider ±5 window only helps words whose senses depend on
+        topic rather than immediate grammar, such as "bank".
+      </p>
+    </div>
+
+    <div class="card chart-card">
+      <svg viewBox="0 0 420 220" class="chart" role="img" aria-label="Macro F1 bar chart">
+        <line x1="40" y1="20" x2="40" y2="180" class="axis" />
+        <line x1="40" y1="180" x2="400" y2="180" class="axis" />
+        <text x="34" y="24" class="axis-label" text-anchor="end">1.0</text>
+        <text x="34" y="102" class="axis-label" text-anchor="end">0.5</text>
+        <text x="34" y="184" class="axis-label" text-anchor="end">0.0</text>
+        <line x1="40" y1="100" x2="400" y2="100" class="gridline" />
+
+        <rect x="70"  y="106" width="46" height="74" class="bar-svm" />
+        <rect x="150" y="122" width="46" height="58" class="bar-svm" />
+        <rect x="250" y="148" width="46" height="32" class="bar-nb" />
+        <rect x="330" y="145" width="46" height="35" class="bar-nb" />
+
+        <text x="93"  y="196" class="bar-label" text-anchor="middle">SVM ±2</text>
+        <text x="173" y="196" class="bar-label" text-anchor="middle">SVM ±5</text>
+        <text x="273" y="196" class="bar-label" text-anchor="middle">NB ±2</text>
+        <text x="353" y="196" class="bar-label" text-anchor="middle">NB ±5</text>
+      </svg>
+      <p class="caption">Macro F1 by model and context window size.</p>
+    </div>
+
+    <h2 class="group-title sub">Worked Examples</h2>
+    <div class="card list-box">
+
+      <div class="example row-correct">
+        <p class="example-sentence">I can't <mark>run</mark>.</p>
+        <div class="example-meta">
+          <span class="chip chip-ok">correct</span>
+          <span class="gloss">predicted and true sense: <b>run.v.01</b> — move fast using your legs</span>
+        </div>
+      </div>
+
+      <div class="example row-correct">
+        <p class="example-sentence">The new version <mark>states</mark>:</p>
+        <div class="example-meta">
+          <span class="chip chip-ok">correct</span>
+          <span class="gloss">predicted and true sense: <b>state.v.01</b> — to officially say something</span>
+        </div>
+      </div>
+
+      <div class="example row-correct">
+        <p class="example-sentence">He felt a spectator <mark>interest</mark>.</p>
+        <div class="example-meta">
+          <span class="chip chip-ok">correct</span>
+          <span class="gloss">predicted and true sense: <b>interest.n.01</b> — a feeling of curiosity about something</span>
+        </div>
+      </div>
+
+      <div class="example row-correct">
+        <p class="example-sentence">An isolated <mark>case</mark> of quackery?</p>
+        <div class="example-meta">
+          <span class="chip chip-ok">correct</span>
+          <span class="gloss">predicted and true sense: <b>case.n.01</b> — a particular instance or example</span>
+        </div>
+      </div>
+
+      <div class="example row-wrong">
+        <p class="example-sentence">Watson stumbled down the <mark>bank</mark>.</p>
+        <div class="example-meta">
+          <span class="chip chip-bad">mistake</span>
+          <span class="gloss">true: <b>bank.n.01</b> — a sloping ridge of land by a river &nbsp;·&nbsp; predicted: <b>depository_financial_institution.n.01</b> — a bank you keep money in</span>
+        </div>
+      </div>
+
+      <div class="example row-wrong">
+        <p class="example-sentence">It was mother who <mark>planted</mark> the verbenas.</p>
+        <div class="example-meta">
+          <span class="chip chip-bad">mistake</span>
+          <span class="gloss">true: <b>plant.v.01</b> — to put seeds or seedlings in the ground &nbsp;·&nbsp; predicted: <b>plant.n.01</b> — a factory</span>
+        </div>
+      </div>
+
+    </div>
+    <p class="caption">
+      Six real sentences and the SVM's actual ±5‑window predictions, chosen to
+      show both where the model gets it right and where it still fails —
+      usually on the same kind of topic‑dependent ambiguity the wider window
+      was meant to fix.
+    </p>
+
+  </section>
+
+</main>
+
+</body>
+</html>
