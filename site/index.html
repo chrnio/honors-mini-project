@@ -15,6 +15,7 @@
   <nav class="view-switcher" aria-label="Sections">
     <a href="#problem">Problem</a>
     <a href="#approach">Approach</a>
+    <a href="#dataset">Dataset</a>
     <a href="#demo">Demo &amp; Results</a>
   </nav>
 </header>
@@ -108,6 +109,143 @@
             example has been tested once — so no model is ever graded on
             sentences it already memorised. Accuracy and macro F1 are then
             compared across both classifiers and both window sizes.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section id="dataset" class="page">
+    <h1 class="group-title">Dataset Details and Parameters</h1>
+
+    <div class="card">
+      <p>
+        Training data comes from <b>SemCor</b>, a subset of the Brown Corpus
+        in which every content word is hand‑annotated with its correct
+        WordNet synset. Every sentence containing one of the eight target
+        words contributes one labelled instance. Senses occurring fewer than
+        5 times for a word are dropped before training, since 5‑fold
+        cross‑validation needs at least one example of a class in every
+        fold to learn or test it at all — keeping them in would only add
+        noise to the macro F1 score.
+      </p>
+      <table class="results-table">
+        <thead>
+          <tr><th>Word</th><th>Raw instances</th><th>Raw senses</th><th>Senses used</th><th>Instances used</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>bank</td><td>40</td><td>6</td><td>2</td><td>34</td></tr>
+          <tr><td>case</td><td>149</td><td>12</td><td>5</td><td>133</td></tr>
+          <tr><td>interest</td><td>146</td><td>10</td><td>7</td><td>140</td></tr>
+          <tr><td>plant</td><td>110</td><td>5</td><td>3</td><td>107</td></tr>
+          <tr><td>power</td><td>106</td><td>9</td><td>6</td><td>99</td></tr>
+          <tr><td>rate</td><td>120</td><td>6</td><td>3</td><td>116</td></tr>
+          <tr><td>run</td><td>226</td><td>36</td><td>12</td><td>185</td></tr>
+          <tr><td>state</td><td>280</td><td>7</td><td>6</td><td>278</td></tr>
+        </tbody>
+      </table>
+      <p class="caption">
+        1177 raw instances across 91 senses, narrowed to 1092 instances
+        across 44 senses once rare senses are dropped. "run" starts with 36
+        senses because WordNet splits it extremely finely — most of those
+        are kept out for having only a handful of examples each.
+      </p>
+    </div>
+
+    <h2 class="group-title sub">Parameters and Why They Were Chosen</h2>
+    <div class="card list-box">
+
+      <div class="row">
+        <div class="row-badge">1</div>
+        <div class="row-body">
+          <div class="row-title">Context window: ±2 and ±5 tokens</div>
+          <div class="row-subtitle">
+            Both sizes are tested rather than picking one. A narrow window
+            captures immediate grammar (the word right before or after);
+            a wide window captures the broader topic of the sentence.
+            Comparing the two shows which effect actually drives each word's
+            meaning.
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="row-badge">2</div>
+        <div class="row-body">
+          <div class="row-title">Minimum sense frequency: 5 instances</div>
+          <div class="row-subtitle">
+            Any sense with fewer than 5 labelled examples is dropped before
+            training. Below that count, 5‑fold cross‑validation can't
+            reliably put at least one example of the sense in every fold,
+            so keeping it would just inject noise into the results.
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="row-badge">3</div>
+        <div class="row-body">
+          <div class="row-title">5‑fold stratified cross‑validation, fixed seed</div>
+          <div class="row-subtitle">
+            Stratified folds keep each sense's share of examples roughly
+            the same across all 5 folds, which matters because the senses
+            are far from evenly distributed. A fixed random seed (42) makes
+            the split, and therefore the comparison between models, exactly
+            reproducible.
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="row-badge">4</div>
+        <div class="row-body">
+          <div class="row-title">Features: neighbouring POS tags + bag‑of‑words counts</div>
+          <div class="row-subtitle">
+            A dictionary vectorizer turns each occurrence's part‑of‑speech
+            tags and nearby word counts into a numeric vector. Counts
+            (rather than yes/no flags) are used so a word that appears
+            twice nearby counts for more than one that appears once.
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="row-badge">5</div>
+        <div class="row-body">
+          <div class="row-title">Normalization: lowercasing, lemmatizing, stopword removal</div>
+          <div class="row-subtitle">
+            "Run", "running" and "ran" are collapsed into one feature so the
+            model isn't forced to learn each inflected form separately, and
+            common function words (the, of, and, ...) are dropped since they
+            carry no topical signal about which sense is meant.
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="row-badge">6</div>
+        <div class="row-body">
+          <div class="row-title">Metric: macro F1 alongside accuracy</div>
+          <div class="row-subtitle">
+            Plain accuracy can look good just by always guessing the most
+            common sense. Macro F1 scores every sense equally regardless of
+            how often it appears, which is what actually shows whether a
+            model learned the rarer meanings too.
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="row-badge">7</div>
+        <div class="row-body">
+          <div class="row-title">Models: linear SVM and Multinomial Naive Bayes</div>
+          <div class="row-subtitle">
+            The linear SVM is a strong, standard choice for sparse
+            high‑dimensional text features like these. Naive Bayes is kept
+            as a simple, fast baseline, to see how much the SVM's extra
+            complexity actually buys over an assumption as crude as feature
+            independence.
           </div>
         </div>
       </div>
